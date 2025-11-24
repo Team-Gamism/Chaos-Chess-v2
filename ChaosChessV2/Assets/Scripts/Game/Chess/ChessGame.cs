@@ -1,96 +1,412 @@
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
+using System.Collections.Generic;
 
-public class ChessGame : MonoBehaviour
+namespace ChaosChess.Core
 {
-	private const int BOARD_SIZE = 8;
-
-	private ChessPiece[,] board = new ChessPiece[BOARD_SIZE, BOARD_SIZE];
-	private PlayerColor currentColor = PlayerColor.White;
-	private GameState gameState;
-
-	[SerializeField] private float gap = 0.1f;
-	[SerializeField] private float size = 1f;
-	[SerializeField] private Vector3 offset;
-	[SerializeField] private Sprite[] sprites;
-	[SerializeField] private Sprite boardSprite;
-
-	[SerializeField] private Material white;
-	[SerializeField] private Material black;
-
-	private void Awake()
+	public class ChessGame : MonoBehaviour
 	{
-		Initialize();
-	}
+		// ============================================
+		// 상수
+		// ============================================
 
+		private const int BOARD_SIZE = 8;
 
-	private void Initialize()
-	{
-		for(int x = 0; x < BOARD_SIZE; x++)
+		// ============================================
+		// 필드
+		// ============================================
+
+		private ChessPiece[,] board = new ChessPiece[BOARD_SIZE, BOARD_SIZE];
+		private PlayerColor currentPlayer = PlayerColor.White;
+		private GameState gameState = GameState.Playing;
+
+		// 마지막 이동 추적 (앙파상용)
+		private ChessMove? lastMove = null;
+
+		// 이동 히스토리 (나중에 무르기 기능용)
+		private List<ChessMove> moveHistory = new List<ChessMove>();
+
+		// ============================================
+		// Unity Inspector 필드
+		// ============================================
+
+		[Header("Visual Settings")]
+		[SerializeField] private float gap = 0.1f;
+		[SerializeField] private float size = 1f;
+		[SerializeField] private Vector3 offset;
+
+		[Header("Sprites")]
+		[SerializeField] private Sprite[] sprites; // 0: None, 1: Pawn, 2: Knight, 3: Bishop, 4: Rook, 5: Queen, 6: King
+		[SerializeField] private Sprite boardSprite;
+
+		[Header("Materials")]
+		[SerializeField] private Material white;
+		[SerializeField] private Material black;
+
+		// ============================================
+		// Unity 생명주기
+		// ============================================
+
+		private void Awake()
 		{
-			for(int y = 0; y < BOARD_SIZE; y++)
+			Initialize();
+		}
+
+		// ============================================
+		// 초기화
+		// ============================================
+
+		private void Initialize()
+		{
+			// 보드 초기화 (모두 빈 칸)
+			for (int x = 0; x < BOARD_SIZE; x++)
 			{
-				board[x, y] = new ChessPiece { Type = PieceType.None };
+				for (int y = 0; y < BOARD_SIZE; y++)
+				{
+					board[x, y] = new ChessPiece { Type = PieceType.None };
+				}
+			}
+
+			// 백 기물 배치 (아래쪽, y = 7, 6)
+			SetupPieces(PlayerColor.White, 7, 6);
+
+			// 흑 기물 배치 (위쪽, y = 0, 1)
+			SetupPieces(PlayerColor.Black, 0, 1);
+
+			// 화면에 표시
+			SpawnObjects();
+		}
+
+		private void SetupPieces(PlayerColor color, int backRow, int pawnRow)
+		{
+			// 폰 줄
+			for (int x = 0; x < BOARD_SIZE; x++)
+			{
+				board[x, pawnRow] = new ChessPiece { Type = PieceType.Pawn, Color = color };
+			}
+
+			// 뒷줄: 룩, 나이트, 비숍, 퀸, 킹, 비숍, 나이트, 룩
+			board[0, backRow] = new ChessPiece { Type = PieceType.Rook, Color = color };
+			board[1, backRow] = new ChessPiece { Type = PieceType.Knight, Color = color };
+			board[2, backRow] = new ChessPiece { Type = PieceType.Bishop, Color = color };
+			board[3, backRow] = new ChessPiece { Type = PieceType.Queen, Color = color };
+			board[4, backRow] = new ChessPiece { Type = PieceType.King, Color = color };
+			board[5, backRow] = new ChessPiece { Type = PieceType.Bishop, Color = color };
+			board[6, backRow] = new ChessPiece { Type = PieceType.Knight, Color = color };
+			board[7, backRow] = new ChessPiece { Type = PieceType.Rook, Color = color };
+		}
+
+		/// <summary>
+		/// 보드와 기물을 화면에 생성
+		/// </summary>
+		private void SpawnObjects()
+		{
+			GameObject pieces = new GameObject("Pieces");
+			GameObject boards = new GameObject("Boards");
+
+			pieces.transform.SetParent(transform);
+			boards.transform.SetParent(transform);
+
+			for (int x = 0; x < BOARD_SIZE; x++)
+			{
+				for (int y = 0; y < BOARD_SIZE; y++)
+				{
+					// 보드 칸 생성
+					GameObject boardObj = new GameObject($"Board_{x}_{y}");
+					boardObj.transform.SetParent(boards.transform);
+
+					SpriteRenderer boardSR = boardObj.AddComponent<SpriteRenderer>();
+					boardSR.sprite = boardSprite;
+					boardSR.material = (x + y) % 2 == 0 ? white : black;
+					boardSR.sortingOrder = 0;
+
+					Vector3 pos = new Vector3(x * gap, y * gap, 0f);
+					boardObj.transform.position = pos + offset;
+					boardObj.transform.localScale = Vector3.one * size;
+
+					// 기물 생성
+					if (board[x, y].Type != PieceType.None)
+					{
+						GameObject pieceObj = new GameObject($"Piece_{x}_{y}");
+						pieceObj.transform.SetParent(pieces.transform);
+
+						SpriteRenderer pieceSR = pieceObj.AddComponent<SpriteRenderer>();
+						pieceSR.sprite = GetPieceSprite(board[x, y]);
+						pieceSR.sortingOrder = 1;
+
+						pieceObj.transform.position = pos + offset;
+						pieceObj.transform.localScale = Vector3.one * size;
+					}
+				}
 			}
 		}
 
-		SetupPieces(PlayerColor.White, 7, 6);
-		SetupPieces(PlayerColor.Black, 0, 1);
-
-		spawnObjects();
-	}
-
-	private void SetupPieces(PlayerColor color, int backRow, int pawnRow)
-	{
-		for(int x = 0; x < BOARD_SIZE; x++)
+		/// <summary>
+		/// 기물에 맞는 스프라이트 반환
+		/// </summary>
+		private Sprite GetPieceSprite(ChessPiece piece)
 		{
-			board[x, pawnRow].Type = PieceType.Pawn;
-			board[x, pawnRow].Color = color;
-			board[x, backRow].Color = color;
+			if (piece.Type == PieceType.None || sprites == null || sprites.Length < 12)
+				return null;
+
+			// sprites 배열 구조:
+			// 0-5: White (Pawn, Knight, Bishop, Rook, Queen, King)
+			// 6-11: Black (Pawn, Knight, Bishop, Rook, Queen, King)
+
+			int offset = piece.Color == PlayerColor.White ? 0 : 6;
+			int index = (int)piece.Type - 1; // PieceType.Pawn = 1, 그래서 -1
+
+			return sprites[offset + index];
 		}
 
-		board[0, backRow].Type = PieceType.Rook;
-		board[1, backRow].Type = PieceType.Knight;
-		board[2, backRow].Type = PieceType.Bishop;
-		board[3, backRow].Type = PieceType.Queen;
-		board[4, backRow].Type = PieceType.King;
-		board[5, backRow].Type = PieceType.Bishop;
-		board[6, backRow].Type = PieceType.Knight;
-		board[7, backRow].Type = PieceType.Rook;
-	}
+		// ============================================
+		// 핵심 함수
+		// ============================================
 
-	private void spawnObjects()
-	{
-		GameObject pieces = new GameObject("Pieces");
-		GameObject boards = new GameObject("Boards");
-
-		pieces.transform.SetParent(transform);
-		boards.transform.SetParent(transform);
-
-		for (int x = 0; x < BOARD_SIZE; x++)
+		/// <summary>
+		/// 이동 시도
+		/// </summary>
+		public bool TryMove(ChessMove move)
 		{
-			for (int y = 0; y < BOARD_SIZE; y++)
+			// 1. 규칙 검증 (lastMove 전달)
+			if (!GameRules.IsValidMove(board, move, currentPlayer, lastMove))
+				return false;
+
+			// 2. 이동 실행
+			ExecuteMove(move);
+
+			// 3. lastMove 업데이트
+			lastMove = move;
+
+			// 4. 히스토리 추가
+			moveHistory.Add(move);
+
+			// 5. 턴 변경
+			currentPlayer = currentPlayer == PlayerColor.White
+				? PlayerColor.Black
+				: PlayerColor.White;
+
+			// 6. 게임 상태 업데이트
+			UpdateGameState();
+
+			// 7. 화면 업데이트
+			RefreshVisuals();
+
+			return true;
+		}
+
+		/// <summary>
+		/// 실제 이동 실행
+		/// </summary>
+		private void ExecuteMove(ChessMove move)
+		{
+			ChessPiece piece = board[move.FromX, move.FromY];
+
+			// 특수 처리: 캐슬링
+			if (piece.Type == PieceType.King &&
+				Mathf.Abs(move.ToX - move.FromX) == 2)
 			{
-				GameObject boardObj = new GameObject("board" + x + " " + y);
-				GameObject obj = new GameObject("piece"+ x + " " + y);
-				obj.transform.SetParent(pieces.transform);
-				boardObj.transform.SetParent(boards.transform);
-
-				SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
-				SpriteRenderer boardSR = boardObj.AddComponent<SpriteRenderer>();
-
-				sr.sprite = sprites[(int)board[x, y].Type];
-				boardSR.sprite = boardSprite;
-				boardSR.material = (x + y) % 2 == 0 ? white : black;
-
-				Vector3 pos = new Vector3(x * gap, y * gap, 0f);
-				obj.transform.position = pos + offset;
-				obj.transform.localScale = Vector3.one * size;
-
-				boardObj.transform.position = pos + offset;
-				boardObj.transform.localScale = Vector3.one * size;
-
+				ExecuteCastling(move);
+				return;
 			}
+
+			// 특수 처리: 앙파상
+			if (piece.Type == PieceType.Pawn &&
+				move.ToX != move.FromX &&
+				board[move.ToX, move.ToY].Type == PieceType.None)
+			{
+				ExecuteEnPassant(move);
+				return;
+			}
+
+			// 일반 이동
+			board[move.ToX, move.ToY] = piece;
+			board[move.FromX, move.FromY] = new ChessPiece { Type = PieceType.None };
+
+			// 이동 횟수 증가 (캐슬링, 앙파상 판정용)
+			piece.MoveCount++;
+			board[move.ToX, move.ToY] = piece;
+
+			// 폰 프로모션
+			if (piece.Type == PieceType.Pawn)
+			{
+				int promotionRow = piece.Color == PlayerColor.White ? 7 : 0;
+				if (move.ToY == promotionRow)
+				{
+					PieceType promoteTo = move.PromotionType != PieceType.None
+						? move.PromotionType
+						: PieceType.Queen; // 기본값
+
+					board[move.ToX, move.ToY] = new ChessPiece
+					{
+						Type = promoteTo,
+						Color = piece.Color,
+						MoveCount = 1
+					};
+				}
+			}
+		}
+
+		/// <summary>
+		/// 캐슬링 실행
+		/// </summary>
+		private void ExecuteCastling(ChessMove move)
+		{
+			ChessPiece king = board[move.FromX, move.FromY];
+
+			// 킹 이동
+			board[move.ToX, move.ToY] = king;
+			board[move.FromX, move.FromY] = new ChessPiece { Type = PieceType.None };
+			king.MoveCount++;
+			board[move.ToX, move.ToY] = king;
+
+			// 룩 이동
+			int rookFromX = move.ToX > move.FromX ? 7 : 0; // 킹사이드 or 퀸사이드
+			int rookToX = move.ToX > move.FromX ? move.ToX - 1 : move.ToX + 1;
+
+			ChessPiece rook = board[rookFromX, move.FromY];
+			board[rookToX, move.FromY] = rook;
+			board[rookFromX, move.FromY] = new ChessPiece { Type = PieceType.None };
+			rook.MoveCount++;
+			board[rookToX, move.FromY] = rook;
+		}
+
+		/// <summary>
+		/// 앙파상 실행
+		/// </summary>
+		private void ExecuteEnPassant(ChessMove move)
+		{
+			ChessPiece pawn = board[move.FromX, move.FromY];
+
+			// 폰 이동
+			board[move.ToX, move.ToY] = pawn;
+			board[move.FromX, move.FromY] = new ChessPiece { Type = PieceType.None };
+			pawn.MoveCount++;
+			board[move.ToX, move.ToY] = pawn;
+
+			// 적 폰 제거 (옆칸)
+			board[move.ToX, move.FromY] = new ChessPiece { Type = PieceType.None };
+		}
+
+		/// <summary>
+		/// 게임 상태 업데이트
+		/// </summary>
+		private void UpdateGameState()
+		{
+			if (GameRules.IsCheckmate(board, currentPlayer))
+			{
+				gameState = GameState.Checkmate;
+			}
+			else if (GameRules.IsStalemate(board, currentPlayer))
+			{
+				gameState = GameState.Stalemate;
+			}
+			else if (GameRules.IsKingInCheck(board, currentPlayer))
+			{
+				gameState = GameState.Check;
+			}
+			else
+			{
+				gameState = GameState.Playing;
+			}
+		}
+
+		/// <summary>
+		/// 화면 업데이트 (이동 후)
+		/// </summary>
+		private void RefreshVisuals()
+		{
+			// 기존 오브젝트 제거
+			Transform piecesParent = transform.Find("Pieces");
+			if (piecesParent != null)
+				Destroy(piecesParent.gameObject);
+
+			Transform boardsParent = transform.Find("Boards");
+			if (boardsParent != null)
+				Destroy(boardsParent.gameObject);
+
+			// 다시 생성
+			SpawnObjects();
+		}
+
+		// ============================================
+		// Getter 함수
+		// ============================================
+
+		public ChessPiece GetPiece(int x, int y)
+		{
+			if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE)
+				return new ChessPiece { Type = PieceType.None };
+
+			return board[x, y];
+		}
+
+		public PlayerColor GetCurrentPlayer()
+		{
+			return currentPlayer;
+		}
+
+		public GameState GetGameState()
+		{
+			return gameState;
+		}
+
+		public ChessMove? GetLastMove()
+		{
+			return lastMove;
+		}
+
+		public List<ChessMove> GetMoveHistory()
+		{
+			return new List<ChessMove>(moveHistory);
+		}
+
+		public ChessPiece[,] GetBoard()
+		{
+			return (ChessPiece[,])board.Clone();
+		}
+
+		// ============================================
+		// 추가 기능
+		// ============================================
+
+		/// <summary>
+		/// 게임 리셋
+		/// </summary>
+		public void ResetGame()
+		{
+			Initialize();
+			currentPlayer = PlayerColor.White;
+			gameState = GameState.Playing;
+			lastMove = null;
+			moveHistory.Clear();
+		}
+
+		/// <summary>
+		/// 특정 기물 개수 세기 (AI용)
+		/// </summary>
+		public int CountPieces(PlayerColor color)
+		{
+			int count = 0;
+			for (int x = 0; x < BOARD_SIZE; x++)
+			{
+				for (int y = 0; y < BOARD_SIZE; y++)
+				{
+					if (board[x, y].Type != PieceType.None &&
+						board[x, y].Color == color)
+					{
+						count++;
+					}
+				}
+			}
+			return count;
+		}
+
+		/// <summary>
+		/// 가능한 모든 이동 반환 (AI용)
+		/// </summary>
+		public List<ChessMove> GetAllLegalMoves()
+		{
+			return GameRules.GetAllLegalMoves(board, currentPlayer);
 		}
 	}
 }

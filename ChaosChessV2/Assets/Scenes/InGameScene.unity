@@ -167,13 +167,18 @@ MonoBehaviour:
   size: 0.5
   offset: {x: -1.8, y: -1.8, z: 0}
   sprites:
-  - {fileID: 0}
   - {fileID: 21300000, guid: 7ae1847ff2acb9a4ca854e9cdc457f4d, type: 3}
-  - {fileID: 21300000, guid: b25f48e26f249cd4e856fddd7886861f, type: 3}
   - {fileID: 21300000, guid: 93d7ea0779f2af545943ed7707dc83d4, type: 3}
   - {fileID: 21300000, guid: 2ed54017c144ec64f90da50243a4cbbe, type: 3}
+  - {fileID: 21300000, guid: b25f48e26f249cd4e856fddd7886861f, type: 3}
   - {fileID: 21300000, guid: 3bcdea38aa2421a498cda8849efd86fe, type: 3}
   - {fileID: 21300000, guid: 62a8c6983c1f2f1449c47b6d6655190a, type: 3}
+  - {fileID: 21300000, guid: 5c0db6638bd11334984868078920840a, type: 3}
+  - {fileID: 21300000, guid: 1f97fae91ae6f3745a3ffd31b5786f59, type: 3}
+  - {fileID: 21300000, guid: 3b5b34cd989ab03408540f781945ddd4, type: 3}
+  - {fileID: 21300000, guid: cdbe86505e089344eb123d5a9085333b, type: 3}
+  - {fileID: 21300000, guid: 7832e1693a2444546981e227698ea11b, type: 3}
+  - {fileID: 21300000, guid: 818c52e149d237e4eb9f150666445628, type: 3}
   boardSprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
   white: {fileID: 2100000, guid: dddcddb5f8ac0674184815d576dd31fb, type: 2}
   black: {fileID: 2100000, guid: a2f0bf8f7b1bda3438121fcf5b3d1e9a, type: 2}
