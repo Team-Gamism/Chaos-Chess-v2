@@ -163,12 +163,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 081060664ae541c468c39b9f512fc14a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChessGame
-  gameState: 0
-  squareSize: 1
-  whiteMaterial: {fileID: 2100000, guid: a2f0bf8f7b1bda3438121fcf5b3d1e9a, type: 2}
-  blackMaterial: {fileID: 2100000, guid: dddcddb5f8ac0674184815d576dd31fb, type: 2}
-  selectedMaterial: {fileID: 2100000, guid: e58da1f6915cd624f8cf0c5f9af9c1d2, type: 2}
-  highlightMaterial: {fileID: 2100000, guid: d5ffb1331400e6242b26b413c7a063c1, type: 2}
+  gap: 0.5
+  size: 0.5
+  offset: {x: -1.8, y: -1.8, z: 0}
+  sprites:
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 7ae1847ff2acb9a4ca854e9cdc457f4d, type: 3}
+  - {fileID: 21300000, guid: b25f48e26f249cd4e856fddd7886861f, type: 3}
+  - {fileID: 21300000, guid: 93d7ea0779f2af545943ed7707dc83d4, type: 3}
+  - {fileID: 21300000, guid: 2ed54017c144ec64f90da50243a4cbbe, type: 3}
+  - {fileID: 21300000, guid: 3bcdea38aa2421a498cda8849efd86fe, type: 3}
+  - {fileID: 21300000, guid: 62a8c6983c1f2f1449c47b6d6655190a, type: 3}
+  boardSprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+  white: {fileID: 2100000, guid: dddcddb5f8ac0674184815d576dd31fb, type: 2}
+  black: {fileID: 2100000, guid: a2f0bf8f7b1bda3438121fcf5b3d1e9a, type: 2}
 --- !u!1 &1593092985
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,13 +390,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2044100260}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2044100264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -406,7 +414,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 1
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
