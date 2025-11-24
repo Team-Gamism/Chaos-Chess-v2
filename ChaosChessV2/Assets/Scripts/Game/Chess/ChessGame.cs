@@ -113,8 +113,10 @@ namespace ChaosChess.Core
 					// 보드 칸 생성
 					GameObject boardObj = new GameObject($"Board_{x}_{y}");
 					boardObj.transform.SetParent(boards.transform);
+					boardObj.tag = "Board";
 
 					SpriteRenderer boardSR = boardObj.AddComponent<SpriteRenderer>();
+					boardObj.AddComponent<BoxCollider>();
 					boardSR.sprite = boardSprite;
 					boardSR.material = (x + y) % 2 == 0 ? white : black;
 					boardSR.sortingOrder = 0;
@@ -129,6 +131,13 @@ namespace ChaosChess.Core
 						GameObject pieceObj = new GameObject($"Piece_{x}_{y}");
 						pieceObj.transform.SetParent(pieces.transform);
 
+						// 태그 지정
+						pieceObj.tag = "Piece";
+						
+						// 콜라이더 생성
+						pieceObj.AddComponent<BoxCollider>();
+						pieceObj.AddComponent<VisualChessPiece>();
+
 						SpriteRenderer pieceSR = pieceObj.AddComponent<SpriteRenderer>();
 						pieceSR.sprite = GetPieceSprite(board[x, y]);
 						pieceSR.sortingOrder = 1;
@@ -138,6 +147,28 @@ namespace ChaosChess.Core
 					}
 				}
 			}
+		}
+
+		public Vector2 GetCoordFromTransform(Vector3 worldPos)
+		{
+			Vector3 posWithoutOffset = worldPos - offset;
+
+			// 2. 간격(gap)으로 나눕니다 (픽셀 단위를 격자 단위로 변환)
+			float rawX = posWithoutOffset.x / gap;
+			float rawY = posWithoutOffset.y / gap;
+
+			// 3. 가장 가까운 정수로 반올림합니다 (격자 좌표 인덱스)
+			int coordX = Mathf.RoundToInt(rawX);
+			int coordY = Mathf.RoundToInt(rawY);
+
+			// 4. Vector2 (float) 형태로 반환 (InputHandler에서 (byte)로 변환할 것)
+			return new Vector2(coordX, coordY);
+		}
+
+		public Vector2 GetTransformFromCoord(Vector2 coord)
+		{
+			Vector3 pos = new Vector3(coord.x * gap, coord.y * gap, 0f);
+			return pos + offset;
 		}
 
 		/// <summary>
@@ -165,13 +196,14 @@ namespace ChaosChess.Core
 		/// <summary>
 		/// 이동 시도
 		/// </summary>
-		public bool TryMove(ChessMove move)
+		public bool TryMove(ChessMove move, VisualChessPiece visualPiece)
 		{
 			// 1. 규칙 검증 (lastMove 전달)
-			if (!GameRules.IsValidMove(board, move, currentPlayer, lastMove))
-				return false;
+			//if (!GameRules.IsValidMove(board, move, currentPlayer, lastMove))
+			//	return false;
 
 			// 2. 이동 실행
+			Debug.Log($"{move.ToX}, {move.ToY}, {move.FromX}, {move.FromY}");
 			ExecuteMove(move);
 
 			// 3. lastMove 업데이트
@@ -189,7 +221,8 @@ namespace ChaosChess.Core
 			UpdateGameState();
 
 			// 7. 화면 업데이트
-			RefreshVisuals();
+			visualPiece.VisualUpdate(move);
+			//RefreshVisuals();
 
 			return true;
 		}
@@ -313,20 +346,20 @@ namespace ChaosChess.Core
 		/// <summary>
 		/// 화면 업데이트 (이동 후)
 		/// </summary>
-		private void RefreshVisuals()
-		{
-			// 기존 오브젝트 제거
-			Transform piecesParent = transform.Find("Pieces");
-			if (piecesParent != null)
-				Destroy(piecesParent.gameObject);
+		//private void RefreshVisuals()
+		//{
+		//	// 기존 오브젝트 제거
+		//	Transform piecesParent = transform.Find("Pieces");
+		//	if (piecesParent != null)
+		//		Destroy(piecesParent.gameObject);
 
-			Transform boardsParent = transform.Find("Boards");
-			if (boardsParent != null)
-				Destroy(boardsParent.gameObject);
+		//	Transform boardsParent = transform.Find("Boards");
+		//	if (boardsParent != null)
+		//		Destroy(boardsParent.gameObject);
 
-			// 다시 생성
-			SpawnObjects();
-		}
+		//	// 다시 생성
+		//	SpawnObjects();
+		//}
 
 		// ============================================
 		// Getter 함수
