@@ -1,4 +1,5 @@
 using ChaosChess.Core;
+using DG.Tweening;
 using UnityEngine;
 
 public class VisualChessPiece : MonoBehaviour
@@ -16,6 +17,6 @@ public class VisualChessPiece : MonoBehaviour
 		Vector3 toDir = chessGame.GetTransformFromCoord(to);
 		Vector3 fromDir = chessGame.GetTransformFromCoord(from);
 
-		transform.position = new Vector3(toDir.x,toDir.y, -0.1f);
+		transform.DOMove(toDir, 0.5f).SetEase(Ease.OutQuint);
 	}
 }
