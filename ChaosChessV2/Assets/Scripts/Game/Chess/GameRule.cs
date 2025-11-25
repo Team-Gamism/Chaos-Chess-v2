@@ -20,12 +20,18 @@ namespace ChaosChess.Core
 		{
 			// 1. 기본 검증
 			if (!IsBasicValid(board, move, currentPlayer))
+			{
+				Debug.Log("기본 움직임 거부됨!");
 				return false;
+			}
 
 			// 2. 기물별 이동 규칙 검증
 			ChessPiece piece = board[move.FromX, move.FromY];
 			if (!IsValidPieceMove(board, move, piece, lastMove))
+			{
+				Debug.Log("기물 움직임 거부됨! 기물 타입 : " + piece.Type.ToString());
 				return false;
+			}
 
 			// 3. 이동 후 자신의 킹이 체크 상태인지 검증 (자살수 방지)
 			if (WouldBeInCheck(board, move, currentPlayer))
@@ -43,32 +49,51 @@ namespace ChaosChess.Core
 			ChessMove move,
 			PlayerColor currentPlayer)
 		{
+			Debug.Log($"[IsBasicValid] From({move.FromX}, {move.FromY}) → To({move.ToX}, {move.ToY}), Player = {currentPlayer}");
+
 			// 범위 체크
 			if (!IsInBounds(move.FromX, move.FromY) ||
 				!IsInBounds(move.ToX, move.ToY))
+			{
+				Debug.Log("[IsBasicValid] 실패: 이동 범위를 벗어남.");
 				return false;
+			}
 
 			// 출발지에 기물이 있는가?
 			ChessPiece piece = board[move.FromX, move.FromY];
 			if (piece.Type == PieceType.None)
+			{
+				Debug.Log("[IsBasicValid] 실패: 출발 위치에 기물이 없음.");
 				return false;
+			}
 
 			// 내 기물인가?
 			if (piece.Color != currentPlayer)
+			{
+				Debug.Log($"[IsBasicValid] 실패: 출발 기물 색상이 현재 플레이어와 다름. piece.Color={piece.Color}, currentPlayer={currentPlayer}");
 				return false;
+			}
 
 			// 같은 자리로 이동?
 			if (move.FromX == move.ToX && move.FromY == move.ToY)
+			{
+				Debug.Log("[IsBasicValid] 실패: 같은 칸으로 이동하려 함.");
 				return false;
+			}
 
 			// 목적지에 내 기물이 있는가?
 			ChessPiece targetPiece = board[move.ToX, move.ToY];
 			if (targetPiece.Type != PieceType.None &&
 				targetPiece.Color == currentPlayer)
+			{
+				Debug.Log("[IsBasicValid] 실패: 목적 위치에 내 기물이 있음.");
 				return false;
+			}
 
+			Debug.Log("[IsBasicValid] 성공: 기본 유효성 검사 통과.");
 			return true;
 		}
+
 
 		// ============================================
 		// 3. 기물별 이동 규칙

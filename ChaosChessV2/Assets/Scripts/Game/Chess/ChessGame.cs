@@ -5,15 +5,7 @@ namespace ChaosChess.Core
 {
 	public class ChessGame : MonoBehaviour
 	{
-		// ============================================
-		// 상수
-		// ============================================
-
 		private const int BOARD_SIZE = 8;
-
-		// ============================================
-		// 필드
-		// ============================================
 
 		private ChessPiece[,] board = new ChessPiece[BOARD_SIZE, BOARD_SIZE];
 		private PlayerColor currentPlayer = PlayerColor.White;
@@ -25,10 +17,6 @@ namespace ChaosChess.Core
 		// 이동 히스토리 (나중에 무르기 기능용)
 		private List<ChessMove> moveHistory = new List<ChessMove>();
 
-		// ============================================
-		// Unity Inspector 필드
-		// ============================================
-
 		[Header("Visual Settings")]
 		[SerializeField] private float gap = 0.1f;
 		[SerializeField] private float size = 1f;
@@ -36,11 +24,14 @@ namespace ChaosChess.Core
 
 		[Header("Sprites")]
 		[SerializeField] private Sprite[] sprites; // 0: None, 1: Pawn, 2: Knight, 3: Bishop, 4: Rook, 5: Queen, 6: King
-		[SerializeField] private Sprite boardSprite;
 
 		[Header("Materials")]
 		[SerializeField] private Material white;
 		[SerializeField] private Material black;
+
+		[Header("Prefabs")]
+		[SerializeField] private GameObject piecePrefab;
+		[SerializeField] private GameObject boardPrefab;
 
 		// ============================================
 		// Unity 생명주기
@@ -67,10 +58,10 @@ namespace ChaosChess.Core
 			}
 
 			// 백 기물 배치 (아래쪽, y = 7, 6)
-			SetupPieces(PlayerColor.White, 7, 6);
+			SetupPieces(PlayerColor.Black, 7, 6);
 
 			// 흑 기물 배치 (위쪽, y = 0, 1)
-			SetupPieces(PlayerColor.Black, 0, 1);
+			SetupPieces(PlayerColor.White, 0, 1);
 
 			// 화면에 표시
 			SpawnObjects();
@@ -100,26 +91,14 @@ namespace ChaosChess.Core
 		/// </summary>
 		private void SpawnObjects()
 		{
-			GameObject pieces = new GameObject("Pieces");
-			GameObject boards = new GameObject("Boards");
-
-			pieces.transform.SetParent(transform);
-			boards.transform.SetParent(transform);
-
 			for (int x = 0; x < BOARD_SIZE; x++)
 			{
 				for (int y = 0; y < BOARD_SIZE; y++)
 				{
-					// 보드 칸 생성
-					GameObject boardObj = new GameObject($"Board_{x}_{y}");
-					boardObj.transform.SetParent(boards.transform);
-					boardObj.tag = "Board";
+					GameObject boardObj = Instantiate(boardPrefab, transform);
 
-					SpriteRenderer boardSR = boardObj.AddComponent<SpriteRenderer>();
-					boardObj.AddComponent<BoxCollider>();
-					boardSR.sprite = boardSprite;
+					SpriteRenderer boardSR = boardObj.GetComponent<SpriteRenderer>();
 					boardSR.material = (x + y) % 2 == 0 ? white : black;
-					boardSR.sortingOrder = 0;
 
 					Vector3 pos = new Vector3(x * gap, y * gap, 0f);
 					boardObj.transform.position = pos + offset;
@@ -128,19 +107,9 @@ namespace ChaosChess.Core
 					// 기물 생성
 					if (board[x, y].Type != PieceType.None)
 					{
-						GameObject pieceObj = new GameObject($"Piece_{x}_{y}");
-						pieceObj.transform.SetParent(pieces.transform);
-
-						// 태그 지정
-						pieceObj.tag = "Piece";
-						
-						// 콜라이더 생성
-						pieceObj.AddComponent<BoxCollider>();
-						pieceObj.AddComponent<VisualChessPiece>();
-
-						SpriteRenderer pieceSR = pieceObj.AddComponent<SpriteRenderer>();
+						GameObject pieceObj = Instantiate(piecePrefab, transform);
+						SpriteRenderer pieceSR = pieceObj.GetComponent<SpriteRenderer>();
 						pieceSR.sprite = GetPieceSprite(board[x, y]);
-						pieceSR.sortingOrder = 1;
 
 						pieceObj.transform.position = pos + offset;
 						pieceObj.transform.localScale = Vector3.one * size;
@@ -199,8 +168,8 @@ namespace ChaosChess.Core
 		public bool TryMove(ChessMove move, VisualChessPiece visualPiece)
 		{
 			// 1. 규칙 검증 (lastMove 전달)
-			//if (!GameRules.IsValidMove(board, move, currentPlayer, lastMove))
-			//	return false;
+			if (!GameRules.IsValidMove(board, move, currentPlayer, lastMove))
+				return false;
 
 			// 2. 이동 실행
 			Debug.Log($"{move.ToX}, {move.ToY}, {move.FromX}, {move.FromY}");

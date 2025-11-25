@@ -4,8 +4,10 @@ using UnityEngine;
 public class InputHandler : MonoBehaviour
 {
 	private ChessMove move;
-	[SerializeField] private VisualChessPiece piece;
+	private VisualChessPiece piece;
+
 	[SerializeField] private ChessGame game;
+	[SerializeField] private bool isSelected = false;
 
 	private void Update()
 	{
@@ -23,6 +25,7 @@ public class InputHandler : MonoBehaviour
 					{
 						// 터치한 오브젝트가 말일 경우에만 선택
 						piece = hit.collider.GetComponent<VisualChessPiece>();
+						if (piece != null) isSelected = true;
 
 						Vector2 vec = hit.transform.position;
 						vec = game.GetCoordFromTransform(vec);
@@ -43,6 +46,7 @@ public class InputHandler : MonoBehaviour
 						// 이동을 시도하고 성공/실패 여부에 관계없이 선택 해제
 						game.TryMove(move, piece);
 						piece = null;
+						isSelected = false;
 					}
 				}
 				// ...
