@@ -1,5 +1,7 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
+using UnityEditor.Tilemaps;
 
 namespace ChaosChess.Core
 {
@@ -19,7 +21,8 @@ namespace ChaosChess.Core
 
 		[Header("Visual Settings")]
 		[SerializeField] private float gap = 0.1f;
-		[SerializeField] private float size = 1f;
+		[SerializeField] private float pieceSize = 1f;
+		[SerializeField] private float boardSize = 1f;
 		[SerializeField] private Vector3 offset;
 
 		[Header("Sprites")]
@@ -102,7 +105,7 @@ namespace ChaosChess.Core
 
 					Vector3 pos = new Vector3(x * gap, y * gap, 0f);
 					boardObj.transform.position = pos + offset;
-					boardObj.transform.localScale = Vector3.one * size;
+					boardObj.transform.localScale = Vector3.one * boardSize;
 
 					// 기물 생성
 					if (board[x, y].Type != PieceType.None)
@@ -112,7 +115,7 @@ namespace ChaosChess.Core
 						pieceSR.sprite = GetPieceSprite(board[x, y]);
 
 						pieceObj.transform.position = pos + offset;
-						pieceObj.transform.localScale = Vector3.one * size;
+						pieceObj.transform.localScale = Vector3.one * pieceSize;
 					}
 				}
 			}
@@ -220,6 +223,10 @@ namespace ChaosChess.Core
 				return;
 			}
 
+			// 이동 위치에 상대 기물 있을 시 삭제
+			if (board[move.ToX, move.ToY].Type != PieceType.None)
+				GetVisualPiece(move.ToX, move.ToY).IsCaptured = true;
+
 			// 일반 이동
 			board[move.ToX, move.ToY] = piece;
 			board[move.FromX, move.FromY] = new ChessPiece { Type = PieceType.None };
@@ -279,15 +286,24 @@ namespace ChaosChess.Core
 		{
 			ChessPiece pawn = board[move.FromX, move.FromY];
 
-			// 폰 이동
+			// 적 기물 오브젝트
+			ChessPiece capturedPawn = board[move.ToX, move.FromY];
+			if (capturedPawn.Type != PieceType.None)
+			{
+				VisualChessPiece capturedVisual = GetVisualPiece(move.ToX, move.FromY);
+				if (capturedVisual != null)
+					capturedVisual.IsCaptured = true;  // 여기서 처리
+			}
+
+			// 아군 폰 이동
 			board[move.ToX, move.ToY] = pawn;
 			board[move.FromX, move.FromY] = new ChessPiece { Type = PieceType.None };
 			pawn.MoveCount++;
-			board[move.ToX, move.ToY] = pawn;
 
-			// 적 폰 제거 (옆칸)
+			// 4. 적 기물 삭제
 			board[move.ToX, move.FromY] = new ChessPiece { Type = PieceType.None };
 		}
+
 
 		/// <summary>
 		/// 게임 상태 업데이트
@@ -340,6 +356,18 @@ namespace ChaosChess.Core
 				return new ChessPiece { Type = PieceType.None };
 
 			return board[x, y];
+		}
+
+		public VisualChessPiece GetVisualPiece(int x, int y)
+		{
+			if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE)
+				return null;
+
+			Vector3 targetPos = GetTransformFromCoord(new Vector2(x, y));
+
+			return FindObjectsOfType<VisualChessPiece>()
+				.OrderBy(p => Vector3.Distance(p.transform.position, targetPos))
+				.FirstOrDefault();
 		}
 
 		public PlayerColor GetCurrentPlayer()
