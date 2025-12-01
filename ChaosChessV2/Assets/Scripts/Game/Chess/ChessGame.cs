@@ -325,6 +325,7 @@ namespace ChaosChess.Core
 			if (GameRules.IsCheckmate(board, currentPlayer))
 			{
 				gameState = GameState.Checkmate;
+				Debug.Log($"체크메이트! 패배자 : {currentPlayer}");
 			}
 			else if (GameRules.IsStalemate(board, currentPlayer))
 			{

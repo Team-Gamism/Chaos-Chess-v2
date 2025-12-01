@@ -25,7 +25,7 @@ public class InputHandler : MonoBehaviour
 					chessPieces.Add(piece);
 
 					piece = game.GetVisualPiece(x, y);
-					piece.OnCaptured += (() =>
+					piece.OnCaptured.AddListener(() =>
 					{
 						chessPieces.Remove(piece);
 					});
@@ -60,6 +60,8 @@ public class InputHandler : MonoBehaviour
 							{
 								piece = clicked;
 								isSelected = true;
+
+								piece.OnSelected?.Invoke();
 								move.FromX = (byte)vec.x;
 								move.FromY = (byte)vec.y;
 								Debug.Log($"기물 선택됨! 선택된 기물 타입 : {piece.ChessPiece.Type}");
@@ -71,7 +73,9 @@ public class InputHandler : MonoBehaviour
 							if (clicked.ChessPiece.Color == game.GetCurrentPlayer())
 							{
 								// 내 기물 클릭 → 선택 변경
+								piece.OnDeselected?.Invoke();
 								piece = clicked;
+								piece.OnSelected?.Invoke();
 								move.FromX = (byte)vec.x;
 								move.FromY = (byte)vec.y;
 								Debug.Log($"기물 선택됨! 선택된 기물 타입 : {piece.ChessPiece.Type}");
@@ -83,10 +87,12 @@ public class InputHandler : MonoBehaviour
 								move.ToY = (byte)vec.y;
 								Debug.Log($"상대 기물 선택됨! 공격을 시도합니다!");
 								game.TryMove(move, piece);
+
 								for (int i = 0; i < chessPieces.Count; i++)
 									chessPieces[i].CapturedCheck();
 
 								// 선택 해제
+								piece.OnDeselected?.Invoke();
 								piece = null;
 								isSelected = false;
 							}
@@ -107,6 +113,8 @@ public class InputHandler : MonoBehaviour
 							// 이동을 시도하고 성공/실패 여부에 관계없이 선택 해제
 							bool tryMove = game.TryMove(move, piece);
 							Debug.Log($"기물 이동 시도함! 이동을 시도한 기물 : {piece.ChessPiece.Type} 결과 : {tryMove}");
+
+							piece.OnDeselected?.Invoke();
 							piece = null;
 							isSelected = false;
 							for (int i = 0; i < chessPieces.Count; i++)

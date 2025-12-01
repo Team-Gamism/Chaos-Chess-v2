@@ -78,8 +78,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 184836785
+  m_SortingLayer: 1
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 5c0db6638bd11334984868078920840a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -125,3 +125,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72ad30ed8e17f1c4a96075ed0c5db655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualChessPiece
+  IsCaptured: 0
+  OnCaptured:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSelected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDeselected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMoved:
+    m_PersistentCalls:
+      m_Calls: []
