@@ -146,7 +146,7 @@ namespace ChaosChess.Core
 		/// <summary>
 		/// 기물에 맞는 스프라이트 반환
 		/// </summary>
-		private Sprite GetPieceSprite(ChessPiece piece)
+		public Sprite GetPieceSprite(ChessPiece piece)
 		{
 			if (piece.Type == PieceType.None || sprites == null || sprites.Length < 12)
 				return null;
@@ -172,7 +172,7 @@ namespace ChaosChess.Core
 
 			// 2. 이동 실행
 			//Debug.Log($"{move.ToX}, {move.ToY}, {move.FromX}, {move.FromY}");
-			ExecuteMove(move);
+			ExecuteMove(ref move);
 
 			// 3. lastMove 업데이트
 			lastMove = move;
@@ -198,7 +198,7 @@ namespace ChaosChess.Core
 		/// <summary>
 		/// 실제 이동 실행
 		/// </summary>
-		private void ExecuteMove(ChessMove move)
+		private void ExecuteMove(ref ChessMove move)
 		{
 			ChessPiece piece = board[move.FromX, move.FromY];
 
@@ -211,12 +211,14 @@ namespace ChaosChess.Core
 			}
 
 			// 특수 처리: 앙파상
-			if (piece.Type == PieceType.Pawn &&
-				move.ToX != move.FromX &&
-				board[move.ToX, move.ToY].Type == PieceType.None)
+			if (piece.Type == PieceType.Pawn)
 			{
-				ExecuteEnPassant(move);
-				return;
+				if(move.ToX != move.FromX &&
+				board[move.ToX, move.ToY].Type == PieceType.None)
+				{
+					ExecuteEnPassant(move);
+					return;
+				}
 			}
 
 			// 이동 위치에 상대 기물 있을 시 삭제
@@ -247,6 +249,7 @@ namespace ChaosChess.Core
 						Color = piece.Color,
 						MoveCount = 1
 					};
+					move.PromotionType = promoteTo;
 				}
 			}
 		}

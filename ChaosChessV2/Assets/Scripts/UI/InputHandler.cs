@@ -62,6 +62,7 @@ public class InputHandler : MonoBehaviour
 								isSelected = true;
 								move.FromX = (byte)vec.x;
 								move.FromY = (byte)vec.y;
+								Debug.Log($"기물 선택됨! 선택된 기물 타입 : {piece.ChessPiece.Type}");
 							}
 						}
 						else
@@ -73,16 +74,17 @@ public class InputHandler : MonoBehaviour
 								piece = clicked;
 								move.FromX = (byte)vec.x;
 								move.FromY = (byte)vec.y;
+								Debug.Log($"기물 선택됨! 선택된 기물 타입 : {piece.ChessPiece.Type}");
 							}
 							else
 							{
 								// 상대 기물 클릭 → 공격 시도
 								move.ToX = (byte)vec.x;
 								move.ToY = (byte)vec.y;
-
+								Debug.Log($"상대 기물 선택됨! 공격을 시도합니다!");
 								game.TryMove(move, piece);
-														for (int i = 0; i < chessPieces.Count; i++)
-							chessPieces[i].CapturedCheck();
+								for (int i = 0; i < chessPieces.Count; i++)
+									chessPieces[i].CapturedCheck();
 
 								// 선택 해제
 								piece = null;
@@ -92,22 +94,26 @@ public class InputHandler : MonoBehaviour
 					}
 					else if (hit.collider.CompareTag("Board"))
 					{
-						// 터치한 위치를 무조건 도착 지점으로 설정
-						Vector2 vec = hit.transform.position;
-						vec = game.GetCoordFromTransform(vec);
-						//Debug.Log($"{vec.x} {vec.y}");
-						move.ToX = (byte)vec.x;
-						move.ToY = (byte)vec.y;
+						if(piece != null)
+						{
+							// 터치한 위치를 무조건 도착 지점으로 설정
+							Vector2 vec = hit.transform.position;
+							vec = game.GetCoordFromTransform(vec);
+							Debug.Log($"타일 선택됨! 선택된 타일 위치 : {vec}");
+							//Debug.Log($"{vec.x} {vec.y}");
+							move.ToX = (byte)vec.x;
+							move.ToY = (byte)vec.y;
 
-						// 이동을 시도하고 성공/실패 여부에 관계없이 선택 해제
-						game.TryMove(move, piece);
-						piece = null;
-						isSelected = false;
-						for (int i = 0; i < chessPieces.Count; i++)
-							chessPieces[i].CapturedCheck();
+							// 이동을 시도하고 성공/실패 여부에 관계없이 선택 해제
+							bool tryMove = game.TryMove(move, piece);
+							Debug.Log($"기물 이동 시도함! 이동을 시도한 기물 : {piece.ChessPiece.Type} 결과 : {tryMove}");
+							piece = null;
+							isSelected = false;
+							for (int i = 0; i < chessPieces.Count; i++)
+								chessPieces[i].CapturedCheck();
+						}
 					}
 				}
-				// ...
 			}
 		}
 	}

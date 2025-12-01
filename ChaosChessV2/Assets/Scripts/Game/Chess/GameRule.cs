@@ -21,7 +21,7 @@ namespace ChaosChess.Core
 			// 1. 기본 검증
 			if (!IsBasicValid(board, move, currentPlayer))
 			{
-				Debug.Log("기본 움직임 거부됨!");
+				//Debug.Log("기본 움직임 거부됨!");
 				return false;
 			}
 
@@ -29,7 +29,7 @@ namespace ChaosChess.Core
 			ChessPiece piece = board[move.FromX, move.FromY];
 			if (!IsValidPieceMove(board, move, piece, lastMove))
 			{
-				Debug.Log("기물 움직임 거부됨! 기물 타입 : " + piece.Type.ToString());
+				//Debug.Log("기물 움직임 거부됨! 기물 타입 : " + piece.Type.ToString());
 				return false;
 			}
 
@@ -90,7 +90,7 @@ namespace ChaosChess.Core
 				return false;
 			}
 
-			Debug.Log("[IsBasicValid] 성공: 기본 유효성 검사 통과.");
+			//Debug.Log("[IsBasicValid] 성공: 기본 유효성 검사 통과.");
 			return true;
 		}
 
