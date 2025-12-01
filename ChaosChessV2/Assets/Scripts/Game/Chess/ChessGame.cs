@@ -161,10 +161,6 @@ namespace ChaosChess.Core
 			return sprites[offset + index];
 		}
 
-		// ============================================
-		// 핵심 함수
-		// ============================================
-
 		/// <summary>
 		/// 이동 시도
 		/// </summary>
@@ -175,7 +171,7 @@ namespace ChaosChess.Core
 				return false;
 
 			// 2. 이동 실행
-			Debug.Log($"{move.ToX}, {move.ToY}, {move.FromX}, {move.FromY}");
+			//Debug.Log($"{move.ToX}, {move.ToY}, {move.FromX}, {move.FromY}");
 			ExecuteMove(move);
 
 			// 3. lastMove 업데이트
@@ -272,11 +268,24 @@ namespace ChaosChess.Core
 			int rookFromX = move.ToX > move.FromX ? 7 : 0; // 킹사이드 or 퀸사이드
 			int rookToX = move.ToX > move.FromX ? move.ToX - 1 : move.ToX + 1;
 
+			// 룩 이동 애니메이션
+			VisualChessPiece rookPiece = GetVisualPiece(rookFromX, move.FromY);
+
 			ChessPiece rook = board[rookFromX, move.FromY];
 			board[rookToX, move.FromY] = rook;
 			board[rookFromX, move.FromY] = new ChessPiece { Type = PieceType.None };
 			rook.MoveCount++;
 			board[rookToX, move.FromY] = rook;
+
+			ChessMove rookMove = new ChessMove
+			{
+				FromX = (byte)rookFromX,
+				FromY = move.FromY,
+				ToX = (byte)rookToX,
+				ToY = move.FromY
+			};
+
+			rookPiece.VisualUpdate(rookMove);
 		}
 
 		/// <summary>

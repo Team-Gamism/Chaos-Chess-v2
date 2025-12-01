@@ -49,7 +49,7 @@ namespace ChaosChess.Core
 			ChessMove move,
 			PlayerColor currentPlayer)
 		{
-			Debug.Log($"[IsBasicValid] From({move.FromX}, {move.FromY}) → To({move.ToX}, {move.ToY}), Player = {currentPlayer}");
+			//Debug.Log($"[IsBasicValid] From({move.FromX}, {move.FromY}) → To({move.ToX}, {move.ToY}), Player = {currentPlayer}");
 
 			// 범위 체크
 			if (!IsInBounds(move.FromX, move.FromY) ||

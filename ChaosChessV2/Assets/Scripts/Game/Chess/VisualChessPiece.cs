@@ -1,7 +1,6 @@
 using ChaosChess.Core;
 using DG.Tweening;
 using System;
-using UnityEditor;
 using UnityEngine;
 
 public class VisualChessPiece : MonoBehaviour

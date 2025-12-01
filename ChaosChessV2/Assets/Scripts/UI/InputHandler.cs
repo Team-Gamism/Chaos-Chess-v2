@@ -95,7 +95,7 @@ public class InputHandler : MonoBehaviour
 						// 터치한 위치를 무조건 도착 지점으로 설정
 						Vector2 vec = hit.transform.position;
 						vec = game.GetCoordFromTransform(vec);
-						Debug.Log($"{vec.x} {vec.y}");
+						//Debug.Log($"{vec.x} {vec.y}");
 						move.ToX = (byte)vec.x;
 						move.ToY = (byte)vec.y;
 
